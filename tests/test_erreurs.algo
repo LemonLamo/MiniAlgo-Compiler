@@ -1,0 +1,10 @@
+PROGRAM TestErr
+DECL
+    INTEGER : A ;
+    INTEGER : A ;
+ENDDECL
+
+BEGIN
+    Z = 10 ;
+    A = 5 / 0 ;
+END

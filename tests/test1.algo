@@ -1,0 +1,31 @@
+PROGRAM Test
+DECL
+    INTEGER : A, B ;
+    FLOAT : X ;
+    INTEGER : T[10] ;
+    CONST MAX = 100 ;
+    CONST PI = 3.14 ;
+ENDDECL
+
+BEGIN
+    A = 5 ;
+    B = 3 ;
+    X = 2.5 ;
+
+    // test condition
+    IF (A > B) {
+        WRITE(A) ;
+    }
+    ELSE {
+        WRITE(B) ;
+    }
+
+    /* boucle while */
+    WHILE (A < MAX) {
+        A = A + 1 ;
+    }
+
+    READ(B) ;
+    T[0] = A + B ;
+    WRITE(T[0]) ;
+END
