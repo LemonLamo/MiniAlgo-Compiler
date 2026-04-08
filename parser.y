@@ -4,6 +4,8 @@
 #include <string.h>
 #include "ts.h"
 #include "quad.h"
+#include "optim.h"
+#include "codegen.h"
 
 extern int nb_ligne;
 extern int nb_col;
@@ -540,6 +542,15 @@ int main(int argc, char *argv[]) {
 
     ts_afficher();
     quad_afficher();
+
+    if (nb_erreurs == 0) {
+        /* optimisation du code intermediaire */
+        optimiser();
+        quad_afficher_optimise();
+
+        /* generation du code assembleur 8086 */
+        generer_asm8086("sortie.asm");
+    }
 
     return (nb_erreurs > 0) ? 1 : 0;
 }

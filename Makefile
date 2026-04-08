@@ -17,11 +17,11 @@ parser.tab.c parser.tab.h: parser.y
 lex.yy.c: lexer.l parser.tab.h
 	$(FLEX) lexer.l
 
-$(TARGET): parser.tab.c lex.yy.c ts.c quad.c
-	$(CC) $(CFLAGS) -o $(TARGET) parser.tab.c lex.yy.c ts.c quad.c
+$(TARGET): parser.tab.c lex.yy.c ts.c quad.c optim.c codegen.c
+	$(CC) $(CFLAGS) -o $(TARGET) parser.tab.c lex.yy.c ts.c quad.c optim.c codegen.c
 
 clean:
-	rm -f parser.tab.c parser.tab.h lex.yy.c $(TARGET).exe $(TARGET)
+	rm -f parser.tab.c parser.tab.h lex.yy.c $(TARGET).exe $(TARGET) sortie.asm
 
 test: $(TARGET)
 	./$(TARGET) tests/test1.algo

@@ -1,0 +1,13 @@
+PROGRAM TestOpt
+DECL
+    INTEGER : A, B ;
+ENDDECL
+
+BEGIN
+    A = 3 + 5 ;
+    B = 10 * 2 ;
+    B = B + 0 ;
+    A = A * 1 ;
+    WRITE(A) ;
+    WRITE(B) ;
+END

@@ -14,3 +14,8 @@ ensuite : make
 pour tester les fichiers de tests : 
 
 ./minialgo tests/test1.algo (exemple)
+
+
+voir assembleur généré : 
+cat sortie.ass
+
