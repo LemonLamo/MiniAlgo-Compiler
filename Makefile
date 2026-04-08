@@ -2,8 +2,12 @@ CC = gcc
 CFLAGS = -Wall
 FLEX = flex
 BISON = bison
-
 TARGET = minialgo
+
+# fix permission issue sur Windows
+export TMPDIR = .
+export TMP = .
+export TEMP = .
 
 all: $(TARGET)
 

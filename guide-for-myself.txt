@@ -1,0 +1,16 @@
+configuring the path in the terminal once per session :
+export PATH="/c/msys64/usr/bin:$PATH"
+
+verifier les outils : 
+gcc --version && flex --version && bison --version && make --version
+
+
+pour lancer le compilateur : 
+
+make clean  
+
+ensuite : make 
+
+pour tester les fichiers de tests : 
+
+./minialgo tests/test1.algo (exemple)

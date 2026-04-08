@@ -13,31 +13,31 @@ extern char *yytext;
 int yylex(void);
 void yyerror(const char *s);
 
-/* type courant pour les declarations */
-static TypeVar type_courant;
-static int nb_erreurs = 0;
+/* on garde le type courant quand on declare INTEGER : A, B, C ; */
+TypeVar type_courant;
+int nb_erreurs = 0;
 
-/* pour generer les etiquettes */
-static int label_count = 0;
-static char* label_nouveau(void) {
+/* compteur pour generer des etiquettes L0, L1, L2... */
+int label_count = 0;
+
+char* label_nouveau(void) {
     static char buf[20];
-    sprintf(buf, "L%d", label_count++);
+    sprintf(buf, "L%d", label_count);
+    label_count++;
     return buf;
 }
 %}
 
-/* types pour les valeurs semantiques */
 %union {
     int entier;
     float reel;
-    char str[9];   /* MAX_IDF + 1 */
+    char str[9];
     struct {
         char nom[20];
-        int type;   /* 0 = INTEGER, 1 = FLOAT */
+        int type;       /* 0 = INTEGER, 1 = FLOAT */
     } expr;
 }
 
-/* tokens */
 %token MC_PROGRAM MC_DECL MC_ENDDECL MC_BEGIN MC_END
 %token MC_INTEGER MC_FLOAT MC_CONST
 %token MC_IF MC_ELSE MC_FOR MC_WHILE
@@ -51,7 +51,6 @@ static char* label_nouveau(void) {
 
 %type <expr> expression terme facteur condition
 
-/* priorite des operateurs */
 %left OP_OR
 %left OP_AND
 %left OP_EQ OP_NEQ
@@ -83,13 +82,13 @@ declaration
         {
             if ($5 <= 0) {
                 printf("Erreur Semantique : ligne %d, taille de tableau invalide pour '%s'\n",
-                       nb_ligne, $3);
+                    nb_ligne, $3);
                 nb_erreurs++;
             } else {
                 int idx = ts_inserer($3, type_courant, NATURE_TAB, $5);
                 if (idx == -1) {
                     printf("Erreur Semantique : ligne %d, double declaration de '%s'\n",
-                           nb_ligne, $3);
+                        nb_ligne, $3);
                     nb_erreurs++;
                 }
             }
@@ -99,7 +98,7 @@ declaration
             int idx = ts_inserer($2, TYPE_INTEGER, NATURE_CONST, 1);
             if (idx == -1) {
                 printf("Erreur Semantique : ligne %d, double declaration de '%s'\n",
-                       nb_ligne, $2);
+                    nb_ligne, $2);
                 nb_erreurs++;
             } else {
                 ts.entries[idx].val.val_int = $4;
@@ -111,7 +110,7 @@ declaration
             int idx = ts_inserer($2, TYPE_FLOAT, NATURE_CONST, 1);
             if (idx == -1) {
                 printf("Erreur Semantique : ligne %d, double declaration de '%s'\n",
-                       nb_ligne, $2);
+                    nb_ligne, $2);
                 nb_erreurs++;
             } else {
                 ts.entries[idx].val.val_float = $4;
@@ -131,7 +130,7 @@ liste_var
             int idx = ts_inserer($3, type_courant, NATURE_VAR, 1);
             if (idx == -1) {
                 printf("Erreur Semantique : ligne %d, double declaration de '%s'\n",
-                       nb_ligne, $3);
+                    nb_ligne, $3);
                 nb_erreurs++;
             }
         }
@@ -140,7 +139,7 @@ liste_var
             int idx = ts_inserer($1, type_courant, NATURE_VAR, 1);
             if (idx == -1) {
                 printf("Erreur Semantique : ligne %d, double declaration de '%s'\n",
-                       nb_ligne, $1);
+                    nb_ligne, $1);
                 nb_erreurs++;
             }
         }
@@ -160,24 +159,22 @@ instruction
     | lecture
     ;
 
-/* --- Affectation --- */
 affectation
     : IDF '=' expression ';'
         {
             int idx = ts_rechercher($1);
             if (idx == -1) {
                 printf("Erreur Semantique : ligne %d, variable '%s' non declaree\n",
-                       nb_ligne, $1);
+                    nb_ligne, $1);
                 nb_erreurs++;
             } else if (ts.entries[idx].nature == NATURE_CONST) {
-                printf("Erreur Semantique : ligne %d, modification de la constante '%s' interdite\n",
-                       nb_ligne, $1);
+                printf("Erreur Semantique : ligne %d, modification de constante '%s' interdite\n",
+                    nb_ligne, $1);
                 nb_erreurs++;
             } else {
-                /* verif compatibilite de type */
                 if (ts.entries[idx].type == TYPE_INTEGER && $3.type == 1) {
-                    printf("Erreur Semantique : ligne %d, incompatibilite de type pour '%s' (INTEGER attendu)\n",
-                           nb_ligne, $1);
+                    printf("Erreur Semantique : ligne %d, incompatibilite de type pour '%s'\n",
+                        nb_ligne, $1);
                     nb_erreurs++;
                 }
                 generer("=", $3.nom, "", $1);
@@ -189,14 +186,13 @@ affectation
             int idx = ts_rechercher($1);
             if (idx == -1) {
                 printf("Erreur Semantique : ligne %d, tableau '%s' non declare\n",
-                       nb_ligne, $1);
+                    nb_ligne, $1);
                 nb_erreurs++;
             } else if (ts.entries[idx].nature != NATURE_TAB) {
                 printf("Erreur Semantique : ligne %d, '%s' n'est pas un tableau\n",
-                       nb_ligne, $1);
+                    nb_ligne, $1);
                 nb_erreurs++;
             } else {
-                /* generer acces tableau */
                 char buf[30];
                 sprintf(buf, "%s[%s]", $1, $3.nom);
                 generer("=", $6.nom, "", buf);
@@ -204,28 +200,22 @@ affectation
         }
     ;
 
-/* --- Condition IF / ELSE --- */
 condition_instr
     : MC_IF '(' condition ')' '{' instructions '}'
         {
             char lbl_fin[20];
             strcpy(lbl_fin, label_nouveau());
-            /* on a deja genere le saut conditionnel dans 'condition' */
-            /* ici on met le label de fin du if */
             generer("LABEL", lbl_fin, "", "");
         }
     | MC_IF '(' condition ')' '{' instructions '}' MC_ELSE
         {
-            /* saut pour eviter le else */
             char *lbl_else_fin = label_nouveau();
             generer("BR", "", "", lbl_else_fin);
-            /* label debut else */
             char *lbl_else = label_nouveau();
             generer("LABEL", lbl_else, "", "");
         }
       '{' instructions '}'
         {
-            /* label fin else -- on recupere le dernier label genere */
             char lbl[20];
             sprintf(lbl, "L%d", label_count - 2);
             generer("LABEL", lbl, "", "");
@@ -303,18 +293,20 @@ condition
         }
     ;
 
-/* --- Boucle FOR --- */
 boucle_for
     : MC_FOR '(' IDF ':' expression ':' expression ':' expression ')'
         {
             int idx = ts_rechercher($3);
             if (idx == -1) {
                 printf("Erreur Semantique : ligne %d, variable '%s' non declaree\n",
-                       nb_ligne, $3);
+                    nb_ligne, $3);
                 nb_erreurs++;
             }
             /* i = debut */
             generer("=", $5.nom, "", $3);
+            /* label debut de boucle */
+            char *lbl_deb = label_nouveau();
+            generer("LABEL", lbl_deb, "", "");
         }
       '{' instructions '}'
         {
@@ -322,41 +314,40 @@ boucle_for
             char *t = temp_nouveau();
             generer("+", $3, $7.nom, t);
             generer("=", t, "", $3);
-            /* condition i <= fin et saut */
+            /* verifier condition : i <= fin */
             char *cond = temp_nouveau();
             generer("<=", $3, $9.nom, cond);
-            char lbl[20];
-            sprintf(lbl, "L%d", label_count - 1);
-            generer("BZ", cond, "", lbl);
+            /* si vrai, on retourne au debut */
+            char lbl_deb[20];
+            sprintf(lbl_deb, "L%d", label_count - 1);
+            generer("BNZ", cond, "", lbl_deb);
         }
     ;
 
-/* --- Boucle WHILE --- */
 boucle_while
     : MC_WHILE
         {
-            char *lbl_debut = label_nouveau();
-            generer("LABEL", lbl_debut, "", "");
+            char *lbl = label_nouveau();
+            generer("LABEL", lbl, "", "");
         }
       '(' condition ')'
         {
-            char *lbl_fin = label_nouveau();
-            generer("BZ", $4.nom, "", lbl_fin);
+            char *lbl = label_nouveau();
+            generer("BZ", $4.nom, "", lbl);
         }
       '{' instructions '}'
         {
-            /* saut retour au debut */
+            /* retour au debut de la boucle */
             char lbl_deb[20];
             sprintf(lbl_deb, "L%d", label_count - 2);
             generer("BR", "", "", lbl_deb);
-            /* label fin */
+            /* fin de boucle */
             char lbl_fin[20];
             sprintf(lbl_fin, "L%d", label_count - 1);
             generer("LABEL", lbl_fin, "", "");
         }
     ;
 
-/* --- WRITE / READ --- */
 ecriture
     : MC_WRITE '(' expression ')' ';'
         {
@@ -370,7 +361,7 @@ lecture
             int idx = ts_rechercher($3);
             if (idx == -1) {
                 printf("Erreur Semantique : ligne %d, variable '%s' non declaree\n",
-                       nb_ligne, $3);
+                    nb_ligne, $3);
                 nb_erreurs++;
             } else {
                 generer("READ", "", "", $3);
@@ -379,21 +370,27 @@ lecture
         }
     ;
 
-/* --- Expressions arithmetiques --- */
 expression
     : expression '+' terme
         {
             char *t = temp_nouveau();
             generer("+", $1.nom, $3.nom, t);
             strcpy($$.nom, t);
-            $$.type = ($1.type == 1 || $3.type == 1) ? 1 : 0;
+            /* si un des deux est FLOAT, le resultat est FLOAT */
+            if ($1.type == 1 || $3.type == 1)
+                $$.type = 1;
+            else
+                $$.type = 0;
         }
     | expression '-' terme
         {
             char *t = temp_nouveau();
             generer("-", $1.nom, $3.nom, t);
             strcpy($$.nom, t);
-            $$.type = ($1.type == 1 || $3.type == 1) ? 1 : 0;
+            if ($1.type == 1 || $3.type == 1)
+                $$.type = 1;
+            else
+                $$.type = 0;
         }
     | terme
         {
@@ -408,11 +405,14 @@ terme
             char *t = temp_nouveau();
             generer("*", $1.nom, $3.nom, t);
             strcpy($$.nom, t);
-            $$.type = ($1.type == 1 || $3.type == 1) ? 1 : 0;
+            if ($1.type == 1 || $3.type == 1)
+                $$.type = 1;
+            else
+                $$.type = 0;
         }
     | terme '/' facteur
         {
-            /* detection division par zero si c'est une constante */
+            /* verifier division par zero */
             if (strcmp($3.nom, "0") == 0) {
                 printf("Erreur Semantique : ligne %d, division par zero\n", nb_ligne);
                 nb_erreurs++;
@@ -420,7 +420,10 @@ terme
             char *t = temp_nouveau();
             generer("/", $1.nom, $3.nom, t);
             strcpy($$.nom, t);
-            $$.type = ($1.type == 1 || $3.type == 1) ? 1 : 0;
+            if ($1.type == 1 || $3.type == 1)
+                $$.type = 1;
+            else
+                $$.type = 0;
         }
     | facteur
         {
@@ -435,13 +438,16 @@ facteur
             int idx = ts_rechercher($1);
             if (idx == -1) {
                 printf("Erreur Semantique : ligne %d, variable '%s' non declaree\n",
-                       nb_ligne, $1);
+                    nb_ligne, $1);
                 nb_erreurs++;
                 strcpy($$.nom, $1);
                 $$.type = 0;
             } else {
                 strcpy($$.nom, $1);
-                $$.type = (ts.entries[idx].type == TYPE_FLOAT) ? 1 : 0;
+                if (ts.entries[idx].type == TYPE_FLOAT)
+                    $$.type = 1;
+                else
+                    $$.type = 0;
             }
         }
     | IDF '[' expression ']'
@@ -449,11 +455,11 @@ facteur
             int idx = ts_rechercher($1);
             if (idx == -1) {
                 printf("Erreur Semantique : ligne %d, tableau '%s' non declare\n",
-                       nb_ligne, $1);
+                    nb_ligne, $1);
                 nb_erreurs++;
             } else if (ts.entries[idx].nature != NATURE_TAB) {
                 printf("Erreur Semantique : ligne %d, '%s' n'est pas un tableau\n",
-                       nb_ligne, $1);
+                    nb_ligne, $1);
                 nb_erreurs++;
             }
             char *t = temp_nouveau();
@@ -461,7 +467,10 @@ facteur
             sprintf(buf, "%s[%s]", $1, $3.nom);
             generer("=", buf, "", t);
             strcpy($$.nom, t);
-            $$.type = (idx != -1) ? ((ts.entries[idx].type == TYPE_FLOAT) ? 1 : 0) : 0;
+            if (idx != -1 && ts.entries[idx].type == TYPE_FLOAT)
+                $$.type = 1;
+            else
+                $$.type = 0;
         }
     | CST_INT
         {
@@ -504,19 +513,19 @@ facteur
 
 void yyerror(const char *s) {
     printf("Erreur Syntaxique : ligne %d, colonne %d, %s (pres de '%s')\n",
-           nb_ligne, nb_col, s, yytext);
+        nb_ligne, nb_col, s, yytext);
     nb_erreurs++;
 }
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
-        printf("Usage: %s <fichier_source.algo>\n", argv[0]);
+        printf("Usage: %s fichier.algo\n", argv[0]);
         return 1;
     }
 
     yyin = fopen(argv[1], "r");
     if (!yyin) {
-        perror("Impossible d'ouvrir le fichier");
+        printf("Impossible d'ouvrir le fichier %s\n", argv[1]);
         return 1;
     }
 
@@ -532,5 +541,5 @@ int main(int argc, char *argv[]) {
     ts_afficher();
     quad_afficher();
 
-    return nb_erreurs > 0 ? 1 : 0;
+    return (nb_erreurs > 0) ? 1 : 0;
 }

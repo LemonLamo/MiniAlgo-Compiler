@@ -8,13 +8,13 @@
 #define TAILLE_TABLE 100
 #define MAX_IDF 8
 
-/* types possibles */
+
 typedef enum {
     TYPE_INTEGER,
     TYPE_FLOAT
 } TypeVar;
 
-/* nature de l'entree dans la TS */
+
 typedef enum {
     NATURE_VAR,
     NATURE_CONST,

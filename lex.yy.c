@@ -1,5 +1,5 @@
 
-#line 2 "lex.yy.c"
+#line 3 "lex.yy.c"
 
 #define  YY_INT_ALIGNED short int
 
@@ -520,11 +520,9 @@ char *yytext;
 
 int nb_ligne = 1;
 int nb_col = 1;
-
-/* mise a jour de la colonne apres chaque token */
-#define MAJ_COL nb_col += yyleng;
+#line 524 "lex.yy.c"
+#define YY_NO_INPUT 1
 #line 526 "lex.yy.c"
-#line 527 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -584,8 +582,6 @@ extern int yywrap ( void );
 #endif
 
 #ifndef YY_NO_UNPUT
-    
-    static void yyunput ( int c, char *buf_ptr  );
     
 #endif
 
@@ -741,12 +737,10 @@ YY_DECL
 		}
 
 	{
-#line 17 "lexer.l"
+#line 14 "lexer.l"
 
 
-#line 20 "lexer.l"
- /* ---- commentaires ---- */
-#line 749 "lex.yy.c"
+#line 744 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -805,14 +799,15 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 21 "lexer.l"
-{ /* commentaire une ligne, on ignore */ MAJ_COL; }
+#line 16 "lexer.l"
+{ /* commentaire une ligne */ }
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 22 "lexer.l"
-{ /* commentaire multi-lignes */
+#line 17 "lexer.l"
+{
+    /* commentaire multi-lignes : on compte les \n dedans */
     int i;
     for (i = 0; i < yyleng; i++) {
         if (yytext[i] == '\n') { nb_ligne++; nb_col = 1; }
@@ -820,265 +815,253 @@ YY_RULE_SETUP
     }
 }
 	YY_BREAK
-/* ---- mots cles ---- */
 case 3:
 YY_RULE_SETUP
-#line 31 "lexer.l"
-{ MAJ_COL; return MC_PROGRAM; }
+#line 26 "lexer.l"
+{ nb_col += yyleng; return MC_PROGRAM; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 32 "lexer.l"
-{ MAJ_COL; return MC_DECL; }
+#line 27 "lexer.l"
+{ nb_col += yyleng; return MC_DECL; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 33 "lexer.l"
-{ MAJ_COL; return MC_ENDDECL; }
+#line 28 "lexer.l"
+{ nb_col += yyleng; return MC_ENDDECL; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 34 "lexer.l"
-{ MAJ_COL; return MC_BEGIN; }
+#line 29 "lexer.l"
+{ nb_col += yyleng; return MC_BEGIN; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 35 "lexer.l"
-{ MAJ_COL; return MC_END; }
+#line 30 "lexer.l"
+{ nb_col += yyleng; return MC_END; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 36 "lexer.l"
-{ MAJ_COL; return MC_INTEGER; }
+#line 31 "lexer.l"
+{ nb_col += yyleng; return MC_INTEGER; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 37 "lexer.l"
-{ MAJ_COL; return MC_FLOAT; }
+#line 32 "lexer.l"
+{ nb_col += yyleng; return MC_FLOAT; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 38 "lexer.l"
-{ MAJ_COL; return MC_CONST; }
+#line 33 "lexer.l"
+{ nb_col += yyleng; return MC_CONST; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 39 "lexer.l"
-{ MAJ_COL; return MC_IF; }
+#line 34 "lexer.l"
+{ nb_col += yyleng; return MC_IF; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 40 "lexer.l"
-{ MAJ_COL; return MC_ELSE; }
+#line 35 "lexer.l"
+{ nb_col += yyleng; return MC_ELSE; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 41 "lexer.l"
-{ MAJ_COL; return MC_FOR; }
+#line 36 "lexer.l"
+{ nb_col += yyleng; return MC_FOR; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 42 "lexer.l"
-{ MAJ_COL; return MC_WHILE; }
+#line 37 "lexer.l"
+{ nb_col += yyleng; return MC_WHILE; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 43 "lexer.l"
-{ MAJ_COL; return MC_READ; }
+#line 38 "lexer.l"
+{ nb_col += yyleng; return MC_READ; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 44 "lexer.l"
-{ MAJ_COL; return MC_WRITE; }
+#line 39 "lexer.l"
+{ nb_col += yyleng; return MC_WRITE; }
 	YY_BREAK
-/* ---- operateurs logiques ---- */
 case 17:
 YY_RULE_SETUP
-#line 47 "lexer.l"
-{ MAJ_COL; return OP_AND; }
+#line 41 "lexer.l"
+{ nb_col += yyleng; return OP_AND; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 48 "lexer.l"
-{ MAJ_COL; return OP_OR; }
+#line 42 "lexer.l"
+{ nb_col += yyleng; return OP_OR; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 49 "lexer.l"
-{ MAJ_COL; return OP_NOT; }
+#line 43 "lexer.l"
+{ nb_col += yyleng; return OP_NOT; }
 	YY_BREAK
-/* ---- operateurs de comparaison ---- */
 case 20:
 YY_RULE_SETUP
-#line 52 "lexer.l"
-{ MAJ_COL; return OP_EQ; }
+#line 45 "lexer.l"
+{ nb_col += yyleng; return OP_EQ; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 53 "lexer.l"
-{ MAJ_COL; return OP_NEQ; }
+#line 46 "lexer.l"
+{ nb_col += yyleng; return OP_NEQ; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 54 "lexer.l"
-{ MAJ_COL; return OP_GE; }
+#line 47 "lexer.l"
+{ nb_col += yyleng; return OP_GE; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 55 "lexer.l"
-{ MAJ_COL; return OP_LE; }
+#line 48 "lexer.l"
+{ nb_col += yyleng; return OP_LE; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 56 "lexer.l"
-{ MAJ_COL; return OP_GT; }
+#line 49 "lexer.l"
+{ nb_col += yyleng; return OP_GT; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 57 "lexer.l"
-{ MAJ_COL; return OP_LT; }
+#line 50 "lexer.l"
+{ nb_col += yyleng; return OP_LT; }
 	YY_BREAK
-/* ---- operateurs arithmetiques ---- */
 case 26:
 YY_RULE_SETUP
-#line 60 "lexer.l"
-{ MAJ_COL; return '+'; }
+#line 52 "lexer.l"
+{ nb_col += yyleng; return '+'; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 61 "lexer.l"
-{ MAJ_COL; return '-'; }
+#line 53 "lexer.l"
+{ nb_col += yyleng; return '-'; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 62 "lexer.l"
-{ MAJ_COL; return '*'; }
+#line 54 "lexer.l"
+{ nb_col += yyleng; return '*'; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 63 "lexer.l"
-{ MAJ_COL; return '/'; }
+#line 55 "lexer.l"
+{ nb_col += yyleng; return '/'; }
 	YY_BREAK
-/* ---- affectation ---- */
 case 30:
 YY_RULE_SETUP
-#line 66 "lexer.l"
-{ MAJ_COL; return '='; }
+#line 56 "lexer.l"
+{ nb_col += yyleng; return '='; }
 	YY_BREAK
-/* ---- delimiteurs ---- */
 case 31:
 YY_RULE_SETUP
-#line 69 "lexer.l"
-{ MAJ_COL; return ';'; }
+#line 58 "lexer.l"
+{ nb_col += yyleng; return ';'; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 70 "lexer.l"
-{ MAJ_COL; return ','; }
+#line 59 "lexer.l"
+{ nb_col += yyleng; return ','; }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 71 "lexer.l"
-{ MAJ_COL; return ':'; }
+#line 60 "lexer.l"
+{ nb_col += yyleng; return ':'; }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 72 "lexer.l"
-{ MAJ_COL; return '('; }
+#line 61 "lexer.l"
+{ nb_col += yyleng; return '('; }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 73 "lexer.l"
-{ MAJ_COL; return ')'; }
+#line 62 "lexer.l"
+{ nb_col += yyleng; return ')'; }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 74 "lexer.l"
-{ MAJ_COL; return '{'; }
+#line 63 "lexer.l"
+{ nb_col += yyleng; return '{'; }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 75 "lexer.l"
-{ MAJ_COL; return '}'; }
+#line 64 "lexer.l"
+{ nb_col += yyleng; return '}'; }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 76 "lexer.l"
-{ MAJ_COL; return '['; }
+#line 65 "lexer.l"
+{ nb_col += yyleng; return '['; }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 77 "lexer.l"
-{ MAJ_COL; return ']'; }
+#line 66 "lexer.l"
+{ nb_col += yyleng; return ']'; }
 	YY_BREAK
-/* ---- constantes reelles (avant entiers pour eviter conflit) ---- */
 case 40:
 YY_RULE_SETUP
-#line 80 "lexer.l"
+#line 68 "lexer.l"
 {
-    MAJ_COL;
+    nb_col += yyleng;
     yylval.reel = atof(yytext);
     return CST_FLOAT;
 }
 	YY_BREAK
-/* ---- constantes entieres ---- */
 case 41:
 YY_RULE_SETUP
-#line 87 "lexer.l"
+#line 74 "lexer.l"
 {
-    MAJ_COL;
+    nb_col += yyleng;
     yylval.entier = atoi(yytext);
-    /* verification de la plage INTEGER */
     if (yylval.entier > 32767) {
         printf("Erreur Lexicale : ligne %d, colonne %d, entier hors plage : %s\n",
-               nb_ligne, nb_col - yyleng, yytext);
+            nb_ligne, nb_col - yyleng, yytext);
     }
     return CST_INT;
 }
 	YY_BREAK
-/* ---- identificateurs ---- */
 case 42:
 YY_RULE_SETUP
-#line 99 "lexer.l"
+#line 84 "lexer.l"
 {
-    MAJ_COL;
+    nb_col += yyleng;
     if (yyleng > MAX_IDF) {
         printf("Erreur Lexicale : ligne %d, colonne %d, identificateur trop long : %s\n",
-               nb_ligne, nb_col - yyleng, yytext);
+            nb_ligne, nb_col - yyleng, yytext);
     }
     strncpy(yylval.str, yytext, MAX_IDF);
     yylval.str[MAX_IDF] = '\0';
     return IDF;
 }
 	YY_BREAK
-/* ---- espaces et retours a la ligne ---- */
 case 43:
 /* rule 43 can match eol */
 YY_RULE_SETUP
-#line 111 "lexer.l"
+#line 95 "lexer.l"
 { nb_ligne++; nb_col = 1; }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 112 "lexer.l"
-{ MAJ_COL; }
+#line 96 "lexer.l"
+{ nb_col += yyleng; }
 	YY_BREAK
-/* ---- caractere non reconnu = erreur lexicale ---- */
 case 45:
 YY_RULE_SETUP
-#line 115 "lexer.l"
+#line 98 "lexer.l"
 {
     printf("Erreur Lexicale : ligne %d, colonne %d, caractere inattendu : '%s'\n",
-           nb_ligne, nb_col, yytext);
-    MAJ_COL;
+        nb_ligne, nb_col, yytext);
+    nb_col++;
 }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 121 "lexer.l"
+#line 104 "lexer.l"
 ECHO;
 	YY_BREAK
-#line 1081 "lex.yy.c"
+#line 1065 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1413,43 +1396,6 @@ static int yy_get_next_buffer (void)
 }
 
 #ifndef YY_NO_UNPUT
-
-    static void yyunput (int c, char * yy_bp )
-{
-	char *yy_cp;
-    
-    yy_cp = (yy_c_buf_p);
-
-	/* undo effects of setting up yytext */
-	*yy_cp = (yy_hold_char);
-
-	if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
-		{ /* need to shift things up to make room */
-		/* +2 for EOB chars. */
-		int number_to_move = (yy_n_chars) + 2;
-		char *dest = &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[
-					YY_CURRENT_BUFFER_LVALUE->yy_buf_size + 2];
-		char *source =
-				&YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[number_to_move];
-
-		while ( source > YY_CURRENT_BUFFER_LVALUE->yy_ch_buf )
-			*--dest = *--source;
-
-		yy_cp += (int) (dest - source);
-		yy_bp += (int) (dest - source);
-		YY_CURRENT_BUFFER_LVALUE->yy_n_chars =
-			(yy_n_chars) = (int) YY_CURRENT_BUFFER_LVALUE->yy_buf_size;
-
-		if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
-			YY_FATAL_ERROR( "flex scanner push-back overflow" );
-		}
-
-	*--yy_cp = (char) c;
-
-	(yytext_ptr) = yy_bp;
-	(yy_hold_char) = *yy_cp;
-	(yy_c_buf_p) = yy_cp;
-}
 
 #endif
 
@@ -2083,6 +2029,6 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 121 "lexer.l"
+#line 104 "lexer.l"
 
 

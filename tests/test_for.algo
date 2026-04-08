@@ -1,0 +1,12 @@
+PROGRAM TestFor
+DECL
+    INTEGER : i, S ;
+ENDDECL
+
+BEGIN
+    S = 0 ;
+    FOR (i : 1 : 1 : 10) {
+        S = S + i ;
+    }
+    WRITE(S) ;
+END

@@ -7,18 +7,15 @@
 
 int nb_ligne = 1;
 int nb_col = 1;
-
-/* mise a jour de la colonne apres chaque token */
-#define MAJ_COL nb_col += yyleng;
 %}
 
-%option noyywrap
+%option noyywrap noinput nounput
 
 %%
 
- /* ---- commentaires ---- */
-"//"[^\n]*          { /* commentaire une ligne, on ignore */ MAJ_COL; }
-"/*"([^*]|\*+[^*/])*\*+"/"  { /* commentaire multi-lignes */
+"//"[^\n]*              { /* commentaire une ligne */ }
+"/*"([^*]|\*+[^*/])*\*+"/"  {
+    /* commentaire multi-lignes : on compte les \n dedans */
     int i;
     for (i = 0; i < yyleng; i++) {
         if (yytext[i] == '\n') { nb_ligne++; nb_col = 1; }
@@ -26,95 +23,82 @@ int nb_col = 1;
     }
 }
 
- /* ---- mots cles ---- */
-"PROGRAM"       { MAJ_COL; return MC_PROGRAM; }
-"DECL"          { MAJ_COL; return MC_DECL; }
-"ENDDECL"       { MAJ_COL; return MC_ENDDECL; }
-"BEGIN"         { MAJ_COL; return MC_BEGIN; }
-"END"           { MAJ_COL; return MC_END; }
-"INTEGER"       { MAJ_COL; return MC_INTEGER; }
-"FLOAT"         { MAJ_COL; return MC_FLOAT; }
-"CONST"         { MAJ_COL; return MC_CONST; }
-"IF"            { MAJ_COL; return MC_IF; }
-"ELSE"          { MAJ_COL; return MC_ELSE; }
-"FOR"           { MAJ_COL; return MC_FOR; }
-"WHILE"         { MAJ_COL; return MC_WHILE; }
-"READ"          { MAJ_COL; return MC_READ; }
-"WRITE"         { MAJ_COL; return MC_WRITE; }
+"PROGRAM"   { nb_col += yyleng; return MC_PROGRAM; }
+"DECL"      { nb_col += yyleng; return MC_DECL; }
+"ENDDECL"   { nb_col += yyleng; return MC_ENDDECL; }
+"BEGIN"     { nb_col += yyleng; return MC_BEGIN; }
+"END"       { nb_col += yyleng; return MC_END; }
+"INTEGER"   { nb_col += yyleng; return MC_INTEGER; }
+"FLOAT"     { nb_col += yyleng; return MC_FLOAT; }
+"CONST"     { nb_col += yyleng; return MC_CONST; }
+"IF"        { nb_col += yyleng; return MC_IF; }
+"ELSE"      { nb_col += yyleng; return MC_ELSE; }
+"FOR"       { nb_col += yyleng; return MC_FOR; }
+"WHILE"     { nb_col += yyleng; return MC_WHILE; }
+"READ"      { nb_col += yyleng; return MC_READ; }
+"WRITE"     { nb_col += yyleng; return MC_WRITE; }
 
- /* ---- operateurs logiques ---- */
-"&&"            { MAJ_COL; return OP_AND; }
-"||"            { MAJ_COL; return OP_OR; }
-"!"             { MAJ_COL; return OP_NOT; }
+"&&"    { nb_col += yyleng; return OP_AND; }
+"||"    { nb_col += yyleng; return OP_OR; }
+"!"     { nb_col += yyleng; return OP_NOT; }
 
- /* ---- operateurs de comparaison ---- */
-"=="            { MAJ_COL; return OP_EQ; }
-"!="            { MAJ_COL; return OP_NEQ; }
-">="            { MAJ_COL; return OP_GE; }
-"<="            { MAJ_COL; return OP_LE; }
-">"             { MAJ_COL; return OP_GT; }
-"<"             { MAJ_COL; return OP_LT; }
+"=="    { nb_col += yyleng; return OP_EQ; }
+"!="    { nb_col += yyleng; return OP_NEQ; }
+">="    { nb_col += yyleng; return OP_GE; }
+"<="    { nb_col += yyleng; return OP_LE; }
+">"     { nb_col += yyleng; return OP_GT; }
+"<"     { nb_col += yyleng; return OP_LT; }
 
- /* ---- operateurs arithmetiques ---- */
-"+"             { MAJ_COL; return '+'; }
-"-"             { MAJ_COL; return '-'; }
-"*"             { MAJ_COL; return '*'; }
-"/"             { MAJ_COL; return '/'; }
+"+"     { nb_col += yyleng; return '+'; }
+"-"     { nb_col += yyleng; return '-'; }
+"*"     { nb_col += yyleng; return '*'; }
+"/"     { nb_col += yyleng; return '/'; }
+"="     { nb_col += yyleng; return '='; }
 
- /* ---- affectation ---- */
-"="             { MAJ_COL; return '='; }
+";"     { nb_col += yyleng; return ';'; }
+","     { nb_col += yyleng; return ','; }
+":"     { nb_col += yyleng; return ':'; }
+"("     { nb_col += yyleng; return '('; }
+")"     { nb_col += yyleng; return ')'; }
+"{"     { nb_col += yyleng; return '{'; }
+"}"     { nb_col += yyleng; return '}'; }
+"["     { nb_col += yyleng; return '['; }
+"]"     { nb_col += yyleng; return ']'; }
 
- /* ---- delimiteurs ---- */
-";"             { MAJ_COL; return ';'; }
-","             { MAJ_COL; return ','; }
-":"             { MAJ_COL; return ':'; }
-"("             { MAJ_COL; return '('; }
-")"             { MAJ_COL; return ')'; }
-"{"             { MAJ_COL; return '{'; }
-"}"             { MAJ_COL; return '}'; }
-"["             { MAJ_COL; return '['; }
-"]"             { MAJ_COL; return ']'; }
-
- /* ---- constantes reelles (avant entiers pour eviter conflit) ---- */
 [0-9]+\.[0-9]+  {
-    MAJ_COL;
+    nb_col += yyleng;
     yylval.reel = atof(yytext);
     return CST_FLOAT;
 }
 
- /* ---- constantes entieres ---- */
-[0-9]+          {
-    MAJ_COL;
+[0-9]+  {
+    nb_col += yyleng;
     yylval.entier = atoi(yytext);
-    /* verification de la plage INTEGER */
     if (yylval.entier > 32767) {
         printf("Erreur Lexicale : ligne %d, colonne %d, entier hors plage : %s\n",
-               nb_ligne, nb_col - yyleng, yytext);
+            nb_ligne, nb_col - yyleng, yytext);
     }
     return CST_INT;
 }
 
- /* ---- identificateurs ---- */
-[a-zA-Z][a-zA-Z0-9_]* {
-    MAJ_COL;
+[a-zA-Z][a-zA-Z0-9_]*  {
+    nb_col += yyleng;
     if (yyleng > MAX_IDF) {
         printf("Erreur Lexicale : ligne %d, colonne %d, identificateur trop long : %s\n",
-               nb_ligne, nb_col - yyleng, yytext);
+            nb_ligne, nb_col - yyleng, yytext);
     }
     strncpy(yylval.str, yytext, MAX_IDF);
     yylval.str[MAX_IDF] = '\0';
     return IDF;
 }
 
- /* ---- espaces et retours a la ligne ---- */
-\n              { nb_ligne++; nb_col = 1; }
-[ \t\r]+        { MAJ_COL; }
+\n          { nb_ligne++; nb_col = 1; }
+[ \t\r]+    { nb_col += yyleng; }
 
- /* ---- caractere non reconnu = erreur lexicale ---- */
-.               {
+.   {
     printf("Erreur Lexicale : ligne %d, colonne %d, caractere inattendu : '%s'\n",
-           nb_ligne, nb_col, yytext);
-    MAJ_COL;
+        nb_ligne, nb_col, yytext);
+    nb_col++;
 }
 
 %%

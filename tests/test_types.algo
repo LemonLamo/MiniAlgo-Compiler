@@ -1,0 +1,13 @@
+PROGRAM TestTypes
+DECL
+    INTEGER : A ;
+    FLOAT : X ;
+    CONST PI = 3.14 ;
+ENDDECL
+
+BEGIN
+    A = 5 ;
+    X = 2.5 ;
+    X = X + 1.0 ;
+    A = X ;
+END

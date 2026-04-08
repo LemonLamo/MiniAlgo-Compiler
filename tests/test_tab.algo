@@ -1,0 +1,12 @@
+PROGRAM TestTab
+DECL
+    INTEGER : T[5] ;
+    INTEGER : i ;
+ENDDECL
+
+BEGIN
+    T[0] = 10 ;
+    T[1] = 20 ;
+    T[2] = T[0] + T[1] ;
+    WRITE(T[2]) ;
+END

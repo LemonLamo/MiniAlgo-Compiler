@@ -1,0 +1,13 @@
+PROGRAM TestSigne
+DECL
+    INTEGER : A, B ;
+    FLOAT : X ;
+ENDDECL
+
+BEGIN
+    A = (-5) ;
+    B = (+12) ;
+    X = (-2.7) ;
+    WRITE(A) ;
+    WRITE(X) ;
+END

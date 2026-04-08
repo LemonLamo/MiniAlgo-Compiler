@@ -83,19 +83,21 @@ extern char *yytext;
 int yylex(void);
 void yyerror(const char *s);
 
-/* type courant pour les declarations */
-static TypeVar type_courant;
-static int nb_erreurs = 0;
+/* on garde le type courant quand on declare INTEGER : A, B, C ; */
+TypeVar type_courant;
+int nb_erreurs = 0;
 
-/* pour generer les etiquettes */
-static int label_count = 0;
-static char* label_nouveau(void) {
+/* compteur pour generer des etiquettes L0, L1, L2... */
+int label_count = 0;
+
+char* label_nouveau(void) {
     static char buf[20];
-    sprintf(buf, "L%d", label_count++);
+    sprintf(buf, "L%d", label_count);
+    label_count++;
     return buf;
 }
 
-#line 99 "parser.tab.c"
+#line 101 "parser.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -576,12 +578,12 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    66,    66,    76,    77,    81,    82,    97,   109,   124,
-     125,   129,   138,   150,   151,   155,   156,   157,   158,   159,
-     160,   165,   187,   209,   218,   217,   236,   243,   250,   257,
-     264,   271,   278,   285,   292,   299,   309,   308,   337,   342,
-     336,   361,   368,   384,   391,   398,   406,   413,   425,   433,
-     447,   466,   471,   476,   481,   486,   491,   496
+       0,    65,    65,    75,    76,    80,    81,    96,   108,   123,
+     124,   128,   137,   149,   150,   154,   155,   156,   157,   158,
+     159,   163,   184,   204,   211,   210,   226,   233,   240,   247,
+     254,   261,   268,   275,   282,   289,   298,   297,   329,   334,
+     328,   352,   359,   374,   385,   395,   403,   413,   428,   436,
+     453,   475,   480,   485,   490,   495,   500,   505
 };
 #endif
 
@@ -1243,145 +1245,143 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* programme: MC_PROGRAM IDF MC_DECL declarations MC_ENDDECL MC_BEGIN instructions MC_END  */
-#line 67 "parser.y"
+#line 66 "parser.y"
         {
             if (nb_erreurs == 0)
                 printf("Compilation terminee avec succes.\n");
             else
                 printf("Compilation terminee avec %d erreur(s).\n", nb_erreurs);
         }
-#line 1254 "parser.tab.c"
+#line 1256 "parser.tab.c"
     break;
 
   case 6: /* declaration: type_decl ':' IDF '[' CST_INT ']' ';'  */
-#line 83 "parser.y"
+#line 82 "parser.y"
         {
             if ((yyvsp[-2].entier) <= 0) {
                 printf("Erreur Semantique : ligne %d, taille de tableau invalide pour '%s'\n",
-                       nb_ligne, (yyvsp[-4].str));
+                    nb_ligne, (yyvsp[-4].str));
                 nb_erreurs++;
             } else {
                 int idx = ts_inserer((yyvsp[-4].str), type_courant, NATURE_TAB, (yyvsp[-2].entier));
                 if (idx == -1) {
                     printf("Erreur Semantique : ligne %d, double declaration de '%s'\n",
-                           nb_ligne, (yyvsp[-4].str));
+                        nb_ligne, (yyvsp[-4].str));
                     nb_erreurs++;
                 }
             }
         }
-#line 1273 "parser.tab.c"
+#line 1275 "parser.tab.c"
     break;
 
   case 7: /* declaration: MC_CONST IDF '=' CST_INT ';'  */
-#line 98 "parser.y"
+#line 97 "parser.y"
         {
             int idx = ts_inserer((yyvsp[-3].str), TYPE_INTEGER, NATURE_CONST, 1);
             if (idx == -1) {
                 printf("Erreur Semantique : ligne %d, double declaration de '%s'\n",
-                       nb_ligne, (yyvsp[-3].str));
+                    nb_ligne, (yyvsp[-3].str));
                 nb_erreurs++;
             } else {
                 ts.entries[idx].val.val_int = (yyvsp[-1].entier);
                 ts.entries[idx].is_init = 1;
             }
         }
-#line 1289 "parser.tab.c"
+#line 1291 "parser.tab.c"
     break;
 
   case 8: /* declaration: MC_CONST IDF '=' CST_FLOAT ';'  */
-#line 110 "parser.y"
+#line 109 "parser.y"
         {
             int idx = ts_inserer((yyvsp[-3].str), TYPE_FLOAT, NATURE_CONST, 1);
             if (idx == -1) {
                 printf("Erreur Semantique : ligne %d, double declaration de '%s'\n",
-                       nb_ligne, (yyvsp[-3].str));
+                    nb_ligne, (yyvsp[-3].str));
                 nb_erreurs++;
             } else {
                 ts.entries[idx].val.val_float = (yyvsp[-1].reel);
                 ts.entries[idx].is_init = 1;
             }
         }
-#line 1305 "parser.tab.c"
+#line 1307 "parser.tab.c"
     break;
 
   case 9: /* type_decl: MC_INTEGER  */
-#line 124 "parser.y"
+#line 123 "parser.y"
                     { type_courant = TYPE_INTEGER; }
-#line 1311 "parser.tab.c"
+#line 1313 "parser.tab.c"
     break;
 
   case 10: /* type_decl: MC_FLOAT  */
-#line 125 "parser.y"
+#line 124 "parser.y"
                     { type_courant = TYPE_FLOAT; }
-#line 1317 "parser.tab.c"
+#line 1319 "parser.tab.c"
     break;
 
   case 11: /* liste_var: liste_var ',' IDF  */
-#line 130 "parser.y"
+#line 129 "parser.y"
         {
             int idx = ts_inserer((yyvsp[0].str), type_courant, NATURE_VAR, 1);
             if (idx == -1) {
                 printf("Erreur Semantique : ligne %d, double declaration de '%s'\n",
-                       nb_ligne, (yyvsp[0].str));
+                    nb_ligne, (yyvsp[0].str));
                 nb_erreurs++;
             }
         }
-#line 1330 "parser.tab.c"
+#line 1332 "parser.tab.c"
     break;
 
   case 12: /* liste_var: IDF  */
-#line 139 "parser.y"
+#line 138 "parser.y"
         {
             int idx = ts_inserer((yyvsp[0].str), type_courant, NATURE_VAR, 1);
             if (idx == -1) {
                 printf("Erreur Semantique : ligne %d, double declaration de '%s'\n",
-                       nb_ligne, (yyvsp[0].str));
+                    nb_ligne, (yyvsp[0].str));
                 nb_erreurs++;
             }
         }
-#line 1343 "parser.tab.c"
+#line 1345 "parser.tab.c"
     break;
 
   case 21: /* affectation: IDF '=' expression ';'  */
-#line 166 "parser.y"
+#line 164 "parser.y"
         {
             int idx = ts_rechercher((yyvsp[-3].str));
             if (idx == -1) {
                 printf("Erreur Semantique : ligne %d, variable '%s' non declaree\n",
-                       nb_ligne, (yyvsp[-3].str));
+                    nb_ligne, (yyvsp[-3].str));
                 nb_erreurs++;
             } else if (ts.entries[idx].nature == NATURE_CONST) {
-                printf("Erreur Semantique : ligne %d, modification de la constante '%s' interdite\n",
-                       nb_ligne, (yyvsp[-3].str));
+                printf("Erreur Semantique : ligne %d, modification de constante '%s' interdite\n",
+                    nb_ligne, (yyvsp[-3].str));
                 nb_erreurs++;
             } else {
-                /* verif compatibilite de type */
                 if (ts.entries[idx].type == TYPE_INTEGER && (yyvsp[-1].expr).type == 1) {
-                    printf("Erreur Semantique : ligne %d, incompatibilite de type pour '%s' (INTEGER attendu)\n",
-                           nb_ligne, (yyvsp[-3].str));
+                    printf("Erreur Semantique : ligne %d, incompatibilite de type pour '%s'\n",
+                        nb_ligne, (yyvsp[-3].str));
                     nb_erreurs++;
                 }
                 generer("=", (yyvsp[-1].expr).nom, "", (yyvsp[-3].str));
                 ts.entries[idx].is_init = 1;
             }
         }
-#line 1369 "parser.tab.c"
+#line 1370 "parser.tab.c"
     break;
 
   case 22: /* affectation: IDF '[' expression ']' '=' expression ';'  */
-#line 188 "parser.y"
+#line 185 "parser.y"
         {
             int idx = ts_rechercher((yyvsp[-6].str));
             if (idx == -1) {
                 printf("Erreur Semantique : ligne %d, tableau '%s' non declare\n",
-                       nb_ligne, (yyvsp[-6].str));
+                    nb_ligne, (yyvsp[-6].str));
                 nb_erreurs++;
             } else if (ts.entries[idx].nature != NATURE_TAB) {
                 printf("Erreur Semantique : ligne %d, '%s' n'est pas un tableau\n",
-                       nb_ligne, (yyvsp[-6].str));
+                    nb_ligne, (yyvsp[-6].str));
                 nb_erreurs++;
             } else {
-                /* generer acces tableau */
                 char buf[30];
                 sprintf(buf, "%s[%s]", (yyvsp[-6].str), (yyvsp[-4].expr).nom);
                 generer("=", (yyvsp[-1].expr).nom, "", buf);
@@ -1391,284 +1391,293 @@ yyreduce:
     break;
 
   case 23: /* condition_instr: MC_IF '(' condition ')' '{' instructions '}'  */
-#line 210 "parser.y"
+#line 205 "parser.y"
         {
             char lbl_fin[20];
             strcpy(lbl_fin, label_nouveau());
-            /* on a deja genere le saut conditionnel dans 'condition' */
-            /* ici on met le label de fin du if */
             generer("LABEL", lbl_fin, "", "");
         }
-#line 1403 "parser.tab.c"
+#line 1401 "parser.tab.c"
     break;
 
   case 24: /* $@1: %empty  */
-#line 218 "parser.y"
+#line 211 "parser.y"
         {
-            /* saut pour eviter le else */
             char *lbl_else_fin = label_nouveau();
             generer("BR", "", "", lbl_else_fin);
-            /* label debut else */
             char *lbl_else = label_nouveau();
             generer("LABEL", lbl_else, "", "");
         }
-#line 1416 "parser.tab.c"
+#line 1412 "parser.tab.c"
     break;
 
   case 25: /* condition_instr: MC_IF '(' condition ')' '{' instructions '}' MC_ELSE $@1 '{' instructions '}'  */
-#line 227 "parser.y"
+#line 218 "parser.y"
         {
-            /* label fin else -- on recupere le dernier label genere */
             char lbl[20];
             sprintf(lbl, "L%d", label_count - 2);
             generer("LABEL", lbl, "", "");
         }
-#line 1427 "parser.tab.c"
+#line 1422 "parser.tab.c"
     break;
 
   case 26: /* condition: expression OP_GT expression  */
-#line 237 "parser.y"
+#line 227 "parser.y"
         {
             char *t = temp_nouveau();
             generer(">", (yyvsp[-2].expr).nom, (yyvsp[0].expr).nom, t);
             strcpy((yyval.expr).nom, t);
             (yyval.expr).type = 0;
         }
-#line 1438 "parser.tab.c"
+#line 1433 "parser.tab.c"
     break;
 
   case 27: /* condition: expression OP_LT expression  */
-#line 244 "parser.y"
+#line 234 "parser.y"
         {
             char *t = temp_nouveau();
             generer("<", (yyvsp[-2].expr).nom, (yyvsp[0].expr).nom, t);
             strcpy((yyval.expr).nom, t);
             (yyval.expr).type = 0;
         }
-#line 1449 "parser.tab.c"
+#line 1444 "parser.tab.c"
     break;
 
   case 28: /* condition: expression OP_GE expression  */
-#line 251 "parser.y"
+#line 241 "parser.y"
         {
             char *t = temp_nouveau();
             generer(">=", (yyvsp[-2].expr).nom, (yyvsp[0].expr).nom, t);
             strcpy((yyval.expr).nom, t);
             (yyval.expr).type = 0;
         }
-#line 1460 "parser.tab.c"
+#line 1455 "parser.tab.c"
     break;
 
   case 29: /* condition: expression OP_LE expression  */
-#line 258 "parser.y"
+#line 248 "parser.y"
         {
             char *t = temp_nouveau();
             generer("<=", (yyvsp[-2].expr).nom, (yyvsp[0].expr).nom, t);
             strcpy((yyval.expr).nom, t);
             (yyval.expr).type = 0;
         }
-#line 1471 "parser.tab.c"
+#line 1466 "parser.tab.c"
     break;
 
   case 30: /* condition: expression OP_EQ expression  */
-#line 265 "parser.y"
+#line 255 "parser.y"
         {
             char *t = temp_nouveau();
             generer("==", (yyvsp[-2].expr).nom, (yyvsp[0].expr).nom, t);
             strcpy((yyval.expr).nom, t);
             (yyval.expr).type = 0;
         }
-#line 1482 "parser.tab.c"
+#line 1477 "parser.tab.c"
     break;
 
   case 31: /* condition: expression OP_NEQ expression  */
-#line 272 "parser.y"
+#line 262 "parser.y"
         {
             char *t = temp_nouveau();
             generer("!=", (yyvsp[-2].expr).nom, (yyvsp[0].expr).nom, t);
             strcpy((yyval.expr).nom, t);
             (yyval.expr).type = 0;
         }
-#line 1493 "parser.tab.c"
+#line 1488 "parser.tab.c"
     break;
 
   case 32: /* condition: condition OP_AND condition  */
-#line 279 "parser.y"
+#line 269 "parser.y"
         {
             char *t = temp_nouveau();
             generer("&&", (yyvsp[-2].expr).nom, (yyvsp[0].expr).nom, t);
             strcpy((yyval.expr).nom, t);
             (yyval.expr).type = 0;
         }
-#line 1504 "parser.tab.c"
+#line 1499 "parser.tab.c"
     break;
 
   case 33: /* condition: condition OP_OR condition  */
-#line 286 "parser.y"
+#line 276 "parser.y"
         {
             char *t = temp_nouveau();
             generer("||", (yyvsp[-2].expr).nom, (yyvsp[0].expr).nom, t);
             strcpy((yyval.expr).nom, t);
             (yyval.expr).type = 0;
         }
-#line 1515 "parser.tab.c"
+#line 1510 "parser.tab.c"
     break;
 
   case 34: /* condition: OP_NOT condition  */
-#line 293 "parser.y"
+#line 283 "parser.y"
         {
             char *t = temp_nouveau();
             generer("!", (yyvsp[0].expr).nom, "", t);
             strcpy((yyval.expr).nom, t);
             (yyval.expr).type = 0;
         }
-#line 1526 "parser.tab.c"
+#line 1521 "parser.tab.c"
     break;
 
   case 35: /* condition: '(' condition ')'  */
-#line 300 "parser.y"
+#line 290 "parser.y"
         {
             strcpy((yyval.expr).nom, (yyvsp[-1].expr).nom);
             (yyval.expr).type = (yyvsp[-1].expr).type;
         }
-#line 1535 "parser.tab.c"
+#line 1530 "parser.tab.c"
     break;
 
   case 36: /* $@2: %empty  */
-#line 309 "parser.y"
+#line 298 "parser.y"
         {
             int idx = ts_rechercher((yyvsp[-7].str));
             if (idx == -1) {
                 printf("Erreur Semantique : ligne %d, variable '%s' non declaree\n",
-                       nb_ligne, (yyvsp[-7].str));
+                    nb_ligne, (yyvsp[-7].str));
                 nb_erreurs++;
             }
             /* i = debut */
             generer("=", (yyvsp[-5].expr).nom, "", (yyvsp[-7].str));
+            /* label debut de boucle */
+            char *lbl_deb = label_nouveau();
+            generer("LABEL", lbl_deb, "", "");
         }
-#line 1550 "parser.tab.c"
+#line 1548 "parser.tab.c"
     break;
 
   case 37: /* boucle_for: MC_FOR '(' IDF ':' expression ':' expression ':' expression ')' $@2 '{' instructions '}'  */
-#line 320 "parser.y"
+#line 312 "parser.y"
         {
             /* i = i + pas */
             char *t = temp_nouveau();
             generer("+", (yyvsp[-11].str), (yyvsp[-7].expr).nom, t);
             generer("=", t, "", (yyvsp[-11].str));
-            /* condition i <= fin et saut */
+            /* verifier condition : i <= fin */
             char *cond = temp_nouveau();
             generer("<=", (yyvsp[-11].str), (yyvsp[-5].expr).nom, cond);
-            char lbl[20];
-            sprintf(lbl, "L%d", label_count - 1);
-            generer("BZ", cond, "", lbl);
+            /* si vrai, on retourne au debut */
+            char lbl_deb[20];
+            sprintf(lbl_deb, "L%d", label_count - 1);
+            generer("BNZ", cond, "", lbl_deb);
         }
-#line 1567 "parser.tab.c"
+#line 1566 "parser.tab.c"
     break;
 
   case 38: /* $@3: %empty  */
-#line 337 "parser.y"
+#line 329 "parser.y"
         {
-            char *lbl_debut = label_nouveau();
-            generer("LABEL", lbl_debut, "", "");
+            char *lbl = label_nouveau();
+            generer("LABEL", lbl, "", "");
         }
-#line 1576 "parser.tab.c"
+#line 1575 "parser.tab.c"
     break;
 
   case 39: /* $@4: %empty  */
-#line 342 "parser.y"
+#line 334 "parser.y"
         {
-            char *lbl_fin = label_nouveau();
-            generer("BZ", (yyvsp[-1].expr).nom, "", lbl_fin);
+            char *lbl = label_nouveau();
+            generer("BZ", (yyvsp[-1].expr).nom, "", lbl);
         }
-#line 1585 "parser.tab.c"
+#line 1584 "parser.tab.c"
     break;
 
   case 40: /* boucle_while: MC_WHILE $@3 '(' condition ')' $@4 '{' instructions '}'  */
-#line 347 "parser.y"
+#line 339 "parser.y"
         {
-            /* saut retour au debut */
+            /* retour au debut de la boucle */
             char lbl_deb[20];
             sprintf(lbl_deb, "L%d", label_count - 2);
             generer("BR", "", "", lbl_deb);
-            /* label fin */
+            /* fin de boucle */
             char lbl_fin[20];
             sprintf(lbl_fin, "L%d", label_count - 1);
             generer("LABEL", lbl_fin, "", "");
         }
-#line 1600 "parser.tab.c"
+#line 1599 "parser.tab.c"
     break;
 
   case 41: /* ecriture: MC_WRITE '(' expression ')' ';'  */
-#line 362 "parser.y"
+#line 353 "parser.y"
         {
             generer("WRITE", (yyvsp[-2].expr).nom, "", "");
         }
-#line 1608 "parser.tab.c"
+#line 1607 "parser.tab.c"
     break;
 
   case 42: /* lecture: MC_READ '(' IDF ')' ';'  */
-#line 369 "parser.y"
+#line 360 "parser.y"
         {
             int idx = ts_rechercher((yyvsp[-2].str));
             if (idx == -1) {
                 printf("Erreur Semantique : ligne %d, variable '%s' non declaree\n",
-                       nb_ligne, (yyvsp[-2].str));
+                    nb_ligne, (yyvsp[-2].str));
                 nb_erreurs++;
             } else {
                 generer("READ", "", "", (yyvsp[-2].str));
                 ts.entries[idx].is_init = 1;
             }
         }
-#line 1624 "parser.tab.c"
+#line 1623 "parser.tab.c"
     break;
 
   case 43: /* expression: expression '+' terme  */
-#line 385 "parser.y"
+#line 375 "parser.y"
         {
             char *t = temp_nouveau();
             generer("+", (yyvsp[-2].expr).nom, (yyvsp[0].expr).nom, t);
             strcpy((yyval.expr).nom, t);
-            (yyval.expr).type = ((yyvsp[-2].expr).type == 1 || (yyvsp[0].expr).type == 1) ? 1 : 0;
+            /* si un des deux est FLOAT, le resultat est FLOAT */
+            if ((yyvsp[-2].expr).type == 1 || (yyvsp[0].expr).type == 1)
+                (yyval.expr).type = 1;
+            else
+                (yyval.expr).type = 0;
         }
-#line 1635 "parser.tab.c"
+#line 1638 "parser.tab.c"
     break;
 
   case 44: /* expression: expression '-' terme  */
-#line 392 "parser.y"
+#line 386 "parser.y"
         {
             char *t = temp_nouveau();
             generer("-", (yyvsp[-2].expr).nom, (yyvsp[0].expr).nom, t);
             strcpy((yyval.expr).nom, t);
-            (yyval.expr).type = ((yyvsp[-2].expr).type == 1 || (yyvsp[0].expr).type == 1) ? 1 : 0;
+            if ((yyvsp[-2].expr).type == 1 || (yyvsp[0].expr).type == 1)
+                (yyval.expr).type = 1;
+            else
+                (yyval.expr).type = 0;
         }
-#line 1646 "parser.tab.c"
+#line 1652 "parser.tab.c"
     break;
 
   case 45: /* expression: terme  */
-#line 399 "parser.y"
+#line 396 "parser.y"
         {
             strcpy((yyval.expr).nom, (yyvsp[0].expr).nom);
             (yyval.expr).type = (yyvsp[0].expr).type;
         }
-#line 1655 "parser.tab.c"
+#line 1661 "parser.tab.c"
     break;
 
   case 46: /* terme: terme '*' facteur  */
-#line 407 "parser.y"
+#line 404 "parser.y"
         {
             char *t = temp_nouveau();
             generer("*", (yyvsp[-2].expr).nom, (yyvsp[0].expr).nom, t);
             strcpy((yyval.expr).nom, t);
-            (yyval.expr).type = ((yyvsp[-2].expr).type == 1 || (yyvsp[0].expr).type == 1) ? 1 : 0;
+            if ((yyvsp[-2].expr).type == 1 || (yyvsp[0].expr).type == 1)
+                (yyval.expr).type = 1;
+            else
+                (yyval.expr).type = 0;
         }
-#line 1666 "parser.tab.c"
+#line 1675 "parser.tab.c"
     break;
 
   case 47: /* terme: terme '/' facteur  */
 #line 414 "parser.y"
         {
-            /* detection division par zero si c'est une constante */
+            /* verifier division par zero */
             if (strcmp((yyvsp[0].expr).nom, "0") == 0) {
                 printf("Erreur Semantique : ligne %d, division par zero\n", nb_ligne);
                 nb_erreurs++;
@@ -1676,49 +1685,55 @@ yyreduce:
             char *t = temp_nouveau();
             generer("/", (yyvsp[-2].expr).nom, (yyvsp[0].expr).nom, t);
             strcpy((yyval.expr).nom, t);
-            (yyval.expr).type = ((yyvsp[-2].expr).type == 1 || (yyvsp[0].expr).type == 1) ? 1 : 0;
+            if ((yyvsp[-2].expr).type == 1 || (yyvsp[0].expr).type == 1)
+                (yyval.expr).type = 1;
+            else
+                (yyval.expr).type = 0;
         }
-#line 1682 "parser.tab.c"
+#line 1694 "parser.tab.c"
     break;
 
   case 48: /* terme: facteur  */
-#line 426 "parser.y"
+#line 429 "parser.y"
         {
             strcpy((yyval.expr).nom, (yyvsp[0].expr).nom);
             (yyval.expr).type = (yyvsp[0].expr).type;
         }
-#line 1691 "parser.tab.c"
+#line 1703 "parser.tab.c"
     break;
 
   case 49: /* facteur: IDF  */
-#line 434 "parser.y"
+#line 437 "parser.y"
         {
             int idx = ts_rechercher((yyvsp[0].str));
             if (idx == -1) {
                 printf("Erreur Semantique : ligne %d, variable '%s' non declaree\n",
-                       nb_ligne, (yyvsp[0].str));
+                    nb_ligne, (yyvsp[0].str));
                 nb_erreurs++;
                 strcpy((yyval.expr).nom, (yyvsp[0].str));
                 (yyval.expr).type = 0;
             } else {
                 strcpy((yyval.expr).nom, (yyvsp[0].str));
-                (yyval.expr).type = (ts.entries[idx].type == TYPE_FLOAT) ? 1 : 0;
+                if (ts.entries[idx].type == TYPE_FLOAT)
+                    (yyval.expr).type = 1;
+                else
+                    (yyval.expr).type = 0;
             }
         }
-#line 1709 "parser.tab.c"
+#line 1724 "parser.tab.c"
     break;
 
   case 50: /* facteur: IDF '[' expression ']'  */
-#line 448 "parser.y"
+#line 454 "parser.y"
         {
             int idx = ts_rechercher((yyvsp[-3].str));
             if (idx == -1) {
                 printf("Erreur Semantique : ligne %d, tableau '%s' non declare\n",
-                       nb_ligne, (yyvsp[-3].str));
+                    nb_ligne, (yyvsp[-3].str));
                 nb_erreurs++;
             } else if (ts.entries[idx].nature != NATURE_TAB) {
                 printf("Erreur Semantique : ligne %d, '%s' n'est pas un tableau\n",
-                       nb_ligne, (yyvsp[-3].str));
+                    nb_ligne, (yyvsp[-3].str));
                 nb_erreurs++;
             }
             char *t = temp_nouveau();
@@ -1726,76 +1741,79 @@ yyreduce:
             sprintf(buf, "%s[%s]", (yyvsp[-3].str), (yyvsp[-1].expr).nom);
             generer("=", buf, "", t);
             strcpy((yyval.expr).nom, t);
-            (yyval.expr).type = (idx != -1) ? ((ts.entries[idx].type == TYPE_FLOAT) ? 1 : 0) : 0;
-        }
-#line 1732 "parser.tab.c"
-    break;
-
-  case 51: /* facteur: CST_INT  */
-#line 467 "parser.y"
-        {
-            sprintf((yyval.expr).nom, "%d", (yyvsp[0].entier));
-            (yyval.expr).type = 0;
-        }
-#line 1741 "parser.tab.c"
-    break;
-
-  case 52: /* facteur: CST_FLOAT  */
-#line 472 "parser.y"
-        {
-            sprintf((yyval.expr).nom, "%.2f", (yyvsp[0].reel));
-            (yyval.expr).type = 1;
+            if (idx != -1 && ts.entries[idx].type == TYPE_FLOAT)
+                (yyval.expr).type = 1;
+            else
+                (yyval.expr).type = 0;
         }
 #line 1750 "parser.tab.c"
     break;
 
-  case 53: /* facteur: '(' expression ')'  */
-#line 477 "parser.y"
+  case 51: /* facteur: CST_INT  */
+#line 476 "parser.y"
         {
-            strcpy((yyval.expr).nom, (yyvsp[-1].expr).nom);
-            (yyval.expr).type = (yyvsp[-1].expr).type;
+            sprintf((yyval.expr).nom, "%d", (yyvsp[0].entier));
+            (yyval.expr).type = 0;
         }
 #line 1759 "parser.tab.c"
     break;
 
-  case 54: /* facteur: '(' '+' CST_INT ')'  */
-#line 482 "parser.y"
+  case 52: /* facteur: CST_FLOAT  */
+#line 481 "parser.y"
         {
-            sprintf((yyval.expr).nom, "%d", (yyvsp[-1].entier));
-            (yyval.expr).type = 0;
+            sprintf((yyval.expr).nom, "%.2f", (yyvsp[0].reel));
+            (yyval.expr).type = 1;
         }
 #line 1768 "parser.tab.c"
     break;
 
-  case 55: /* facteur: '(' '-' CST_INT ')'  */
-#line 487 "parser.y"
+  case 53: /* facteur: '(' expression ')'  */
+#line 486 "parser.y"
         {
-            sprintf((yyval.expr).nom, "%d", -(yyvsp[-1].entier));
-            (yyval.expr).type = 0;
+            strcpy((yyval.expr).nom, (yyvsp[-1].expr).nom);
+            (yyval.expr).type = (yyvsp[-1].expr).type;
         }
 #line 1777 "parser.tab.c"
     break;
 
-  case 56: /* facteur: '(' '+' CST_FLOAT ')'  */
-#line 492 "parser.y"
+  case 54: /* facteur: '(' '+' CST_INT ')'  */
+#line 491 "parser.y"
         {
-            sprintf((yyval.expr).nom, "%.2f", (yyvsp[-1].reel));
-            (yyval.expr).type = 1;
+            sprintf((yyval.expr).nom, "%d", (yyvsp[-1].entier));
+            (yyval.expr).type = 0;
         }
 #line 1786 "parser.tab.c"
     break;
 
-  case 57: /* facteur: '(' '-' CST_FLOAT ')'  */
-#line 497 "parser.y"
+  case 55: /* facteur: '(' '-' CST_INT ')'  */
+#line 496 "parser.y"
         {
-            sprintf((yyval.expr).nom, "%.2f", -(yyvsp[-1].reel));
-            (yyval.expr).type = 1;
+            sprintf((yyval.expr).nom, "%d", -(yyvsp[-1].entier));
+            (yyval.expr).type = 0;
         }
 #line 1795 "parser.tab.c"
     break;
 
+  case 56: /* facteur: '(' '+' CST_FLOAT ')'  */
+#line 501 "parser.y"
+        {
+            sprintf((yyval.expr).nom, "%.2f", (yyvsp[-1].reel));
+            (yyval.expr).type = 1;
+        }
+#line 1804 "parser.tab.c"
+    break;
 
-#line 1799 "parser.tab.c"
+  case 57: /* facteur: '(' '-' CST_FLOAT ')'  */
+#line 506 "parser.y"
+        {
+            sprintf((yyval.expr).nom, "%.2f", -(yyvsp[-1].reel));
+            (yyval.expr).type = 1;
+        }
+#line 1813 "parser.tab.c"
+    break;
+
+
+#line 1817 "parser.tab.c"
 
       default: break;
     }
@@ -1988,24 +2006,24 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 503 "parser.y"
+#line 512 "parser.y"
 
 
 void yyerror(const char *s) {
     printf("Erreur Syntaxique : ligne %d, colonne %d, %s (pres de '%s')\n",
-           nb_ligne, nb_col, s, yytext);
+        nb_ligne, nb_col, s, yytext);
     nb_erreurs++;
 }
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
-        printf("Usage: %s <fichier_source.algo>\n", argv[0]);
+        printf("Usage: %s fichier.algo\n", argv[0]);
         return 1;
     }
 
     yyin = fopen(argv[1], "r");
     if (!yyin) {
-        perror("Impossible d'ouvrir le fichier");
+        printf("Impossible d'ouvrir le fichier %s\n", argv[1]);
         return 1;
     }
 
@@ -2021,5 +2039,5 @@ int main(int argc, char *argv[]) {
     ts_afficher();
     quad_afficher();
 
-    return nb_erreurs > 0 ? 1 : 0;
+    return (nb_erreurs > 0) ? 1 : 0;
 }

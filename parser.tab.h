@@ -88,14 +88,14 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 30 "parser.y"
+#line 31 "parser.y"
 
     int entier;
     float reel;
-    char str[9];   /* MAX_IDF + 1 */
+    char str[9];
     struct {
         char nom[20];
-        int type;   /* 0 = INTEGER, 1 = FLOAT */
+        int type;       /* 0 = INTEGER, 1 = FLOAT */
     } expr;
 
 #line 102 "parser.tab.h"
